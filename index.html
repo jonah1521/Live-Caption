@@ -39,8 +39,26 @@
             <h2>My Class Notes</h2>
             <button id="clear-notes-btn" class="btn danger-outline">Clear Notes</button>
         </div>
+
+        <div class="notebook-bar">
+            <input type="text" id="notebook-title" class="title-input" placeholder="Class or topic title (e.g., Biology 101)">
+            <button id="save-notebook-btn" class="btn primary">Save Notebook</button>
+            <button id="download-current-btn" class="btn secondary-inline">Download .txt</button>
+        </div>
+
+        <div id="save-status" class="save-indicator">Auto-saved</div>
         
         <textarea id="notes-input" placeholder="Type your notes here or copy live captions over..."></textarea>
+    </section>
+
+    <!-- Saved Notebooks Section (Full Width Below) -->
+    <section class="card saved-notebooks-section">
+        <div class="card-header">
+            <h2>Saved Notebooks</h2>
+        </div>
+        <div id="notebooks-list" class="notebooks-list">
+            <p class="placeholder">No saved notebooks yet. Save your current notes above to keep them here.</p>
+        </div>
     </section>
 </main>
 
