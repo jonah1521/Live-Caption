@@ -46,6 +46,10 @@ header h1 {
     flex-direction: column;
 }
 
+.saved-notebooks-section {
+    grid-column: 1 / -1;
+}
+
 .card-header {
     display: flex;
     justify-content: space-between;
@@ -73,6 +77,11 @@ header h1 {
     cursor: pointer;
 }
 
+.btn.small {
+    padding: 0.4rem 0.75rem;
+    font-size: 0.85rem;
+}
+
 .btn:disabled {
     opacity: 0.5;
     cursor: not-allowed;
@@ -94,6 +103,11 @@ header h1 {
     margin-top: 0.75rem;
 }
 
+.secondary-inline {
+    background-color: #2563eb;
+    color: #ffffff;
+}
+
 .danger-outline {
     background-color: transparent;
     color: #dc2626;
@@ -105,6 +119,29 @@ header h1 {
     font-weight: 600;
     color: #475569;
     margin-bottom: 0.75rem;
+}
+
+.save-indicator {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #16a34a;
+    margin-bottom: 0.5rem;
+}
+
+.notebook-bar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.title-input {
+    flex: 1;
+    min-width: 180px;
+    padding: 0.5rem 0.75rem;
+    font-size: 0.95rem;
+    border: 1px solid #cbd5e1;
+    border-radius: 6px;
 }
 
 .caption-display {
@@ -130,7 +167,7 @@ header h1 {
 
 textarea#notes-input {
     flex: 1;
-    min-height: 330px;
+    min-height: 290px;
     width: 100%;
     padding: 1rem;
     font-size: 1.05rem;
@@ -138,6 +175,41 @@ textarea#notes-input {
     border: 1px solid #cbd5e1;
     border-radius: 8px;
     resize: vertical;
+}
+
+.notebooks-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.notebook-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    padding: 0.85rem 1rem;
+    background-color: #f8fafc;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+}
+
+.notebook-info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+}
+
+.notebook-date {
+    font-size: 0.82rem;
+    color: #64748b;
+}
+
+.notebook-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
 }
 
 @media (max-width: 768px) {
