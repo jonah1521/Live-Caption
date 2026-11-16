@@ -1,4 +1,16 @@
-// STARTUP LAYER: Connects buttons and speech events when the page loads
+// STARTUP LAYER: Connects buttons, speech events, and localStorage notebook actions when the page loads
+
+function downloadTextFile(filename, content) {
+    const blob = new Blob([content], { type: "text/plain;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = filename;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+}
 
 document.addEventListener("DOMContentLoaded", function () {
     const startBtn = document.getElementById("start-btn");
@@ -6,7 +18,90 @@ document.addEventListener("DOMContentLoaded", function () {
     const copyBtn = document.getElementById("copy-caption-btn");
     const clearNotesBtn = document.getElementById("clear-notes-btn");
     const notesInput = document.getElementById("notes-input");
+    const notebookTitleInput = document.getElementById("notebook-title");
+    const saveNotebookBtn = document.getElementById("save-notebook-btn");
+    const downloadCurrentBtn = document.getElementById("download-current-btn");
+    const notebooksList = document.getElementById("notebooks-list");
 
+    // Load saved draft and saved notebooks on startup
+    notesInput.value = loadDraftFromStorage();
+    loadNotebooksFromStorage();
+    renderNotebooksList();
+
+    // Auto-save active notes while typing
+    notesInput.addEventListener("input", function () {
+        saveDraftToStorage(notesInput.value);
+        updateSaveIndicator("Auto-saved");
+    });
+
+    // Save current notes as a named notebook entry
+    if (saveNotebookBtn) {
+        saveNotebookBtn.addEventListener("click", function () {
+            const title = notebookTitleInput ? notebookTitleInput.value : "";
+            const saved = addNotebookEntry(title, notesInput.value);
+            if (!saved) {
+                updateSaveIndicator("Type or copy some notes first before saving.");
+                return;
+            }
+            if (notebookTitleInput) {
+                notebookTitleInput.value = "";
+            }
+            renderNotebooksList();
+            updateSaveIndicator("Saved notebook: " + saved.title);
+        });
+    }
+
+    // Download current active notes as a .txt file
+    if (downloadCurrentBtn) {
+        downloadCurrentBtn.addEventListener("click", function () {
+            const content = notesInput.value.trim();
+            if (!content) {
+                updateSaveIndicator("Nothing to download yet.");
+                return;
+            }
+            const title = notebookTitleInput ? notebookTitleInput.value : "";
+            const filename = buildDownloadFilename(title);
+            downloadTextFile(filename, content);
+            updateSaveIndicator("Downloaded " + filename);
+        });
+    }
+
+    // Handle Open, Download .txt, and Delete clicks inside Saved Notebooks
+    if (notebooksList) {
+        notebooksList.addEventListener("click", function (event) {
+            const button = event.target.closest("button");
+            if (!button) {
+                return;
+            }
+
+            const action = button.getAttribute("data-action");
+            const id = button.getAttribute("data-id");
+            const notebook = findNotebookById(id);
+
+            if (!notebook) {
+                return;
+            }
+
+            if (action === "open") {
+                notesInput.value = notebook.content;
+                if (notebookTitleInput) {
+                    notebookTitleInput.value = notebook.title;
+                }
+                saveDraftToStorage(notesInput.value);
+                updateSaveIndicator("Opened: " + notebook.title);
+            } else if (action === "download") {
+                const filename = buildDownloadFilename(notebook.title);
+                downloadTextFile(filename, notebook.content);
+                updateSaveIndicator("Downloaded " + filename);
+            } else if (action === "delete") {
+                deleteNotebookEntry(id);
+                renderNotebooksList();
+                updateSaveIndicator("Deleted: " + notebook.title);
+            }
+        });
+    }
+
+    // Speech Recognition setup
     appState.recognition = setupSpeechRecognition();
 
     if (!appState.recognition) {
@@ -48,9 +143,13 @@ document.addEventListener("DOMContentLoaded", function () {
 
     copyBtn.addEventListener("click", function () {
         notesInput.value = appendCaptionsToNotes(notesInput.value, appState.finalTranscript);
+        saveDraftToStorage(notesInput.value);
+        updateSaveIndicator("Auto-saved");
     });
 
     clearNotesBtn.addEventListener("click", function () {
         notesInput.value = "";
+        saveDraftToStorage("");
+        updateSaveIndicator("Draft cleared");
     });
 });
