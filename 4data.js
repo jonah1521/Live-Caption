@@ -16,6 +16,7 @@ document.addEventListener("DOMContentLoaded", function () {
     const startBtn = document.getElementById("start-btn");
     const stopBtn = document.getElementById("stop-btn");
     const copyBtn = document.getElementById("copy-caption-btn");
+    const highlightBtn = document.getElementById("highlight-btn");
     const clearNotesBtn = document.getElementById("clear-notes-btn");
     const notesInput = document.getElementById("notes-input");
     const notebookTitleInput = document.getElementById("notebook-title");
@@ -168,6 +169,16 @@ document.addEventListener("DOMContentLoaded", function () {
         saveDraftToStorage(notesInput.value);
         updateSaveIndicator("Auto-saved");
     });
+
+    if (highlightBtn) {
+        highlightBtn.addEventListener("click", function () {
+            notesInput.value = appendKeyMomentToNotes(notesInput.value, appState.finalTranscript);
+            notesInput.focus();
+            notesInput.scrollTop = notesInput.scrollHeight;
+            saveDraftToStorage(notesInput.value);
+            updateSaveIndicator("Key moment marked");
+        });
+    }
 
     clearNotesBtn.addEventListener("click", function () {
         notesInput.value = "";
