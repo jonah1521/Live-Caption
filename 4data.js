@@ -122,6 +122,14 @@ document.addEventListener("DOMContentLoaded", function () {
     };
 
     appState.recognition.onerror = function (event) {
+        // Ignore harmless "no-speech" or "aborted" timeouts so auto-restart can keep going
+        if (event.error === "no-speech" || event.error === "aborted") {
+            return;
+        }
+        // Stop auto-restarting if mic permission is denied or not allowed
+        if (event.error === "not-allowed" || event.error === "service-not-allowed") {
+            appState.shouldKeepListening = false;
+        }
         updateStatus("Error: " + event.error);
         appState.isListening = false;
         updateButtonStates(false);
@@ -129,15 +137,29 @@ document.addEventListener("DOMContentLoaded", function () {
 
     appState.recognition.onend = function () {
         appState.isListening = false;
+        if (appState.shouldKeepListening) {
+            try {
+                appState.recognition.start();
+                return;
+            } catch (error) {
+                // Ignore if already starting
+            }
+        }
         updateStatus("Stopped");
         updateButtonStates(false);
     };
 
     startBtn.addEventListener("click", function () {
-        appState.recognition.start();
+        appState.shouldKeepListening = true;
+        try {
+            appState.recognition.start();
+        } catch (error) {
+            // Ignore if already running
+        }
     });
 
     stopBtn.addEventListener("click", function () {
+        appState.shouldKeepListening = false;
         appState.recognition.stop();
     });
 
