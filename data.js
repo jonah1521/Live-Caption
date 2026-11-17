@@ -7,6 +7,7 @@ const STORAGE_KEYS = {
 
 const appState = {
     isListening: false,
+    shouldKeepListening: false,
     finalTranscript: "",
     interimTranscript: "",
     recognition: null,
