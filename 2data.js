@@ -1,4 +1,8 @@
-// PROCESSING LAYER: Handles transcript updates, note rules, and notebook operations
+// PROCESSING LAYER: Handles transcript updates, timestamps, highlights, and notebook operations
+
+function getCurrentTimestamp() {
+    return new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+}
 
 function processSpeechResults(event) {
     let interim = "";
@@ -21,10 +25,22 @@ function appendCaptionsToNotes(currentNotes, finalTranscript) {
         return currentNotes;
     }
 
+    const stampedLine = "[" + getCurrentTimestamp() + "] " + cleanTranscript;
     if (currentNotes.trim() === "") {
-        return cleanTranscript;
+        return stampedLine;
     }
-    return currentNotes.trim() + "\n\n" + cleanTranscript;
+    return currentNotes.trim() + "\n\n" + stampedLine;
+}
+
+function appendKeyMomentToNotes(currentNotes, finalTranscript) {
+    const cleanTranscript = finalTranscript.trim();
+    const tailSnippet = cleanTranscript ? " " + cleanTranscript.slice(-140).trim() : " ";
+    const marker = "★ KEY POINT [" + getCurrentTimestamp() + "]:" + tailSnippet;
+
+    if (currentNotes.trim() === "") {
+        return marker;
+    }
+    return currentNotes.trim() + "\n\n" + marker;
 }
 
 function addNotebookEntry(title, content) {
