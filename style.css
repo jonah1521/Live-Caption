@@ -68,6 +68,18 @@ header h1 {
     gap: 0.5rem;
 }
 
+.caption-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-top: 0.75rem;
+}
+
+.caption-actions .secondary {
+    flex: 1;
+    margin-top: 0;
+}
+
 .btn {
     padding: 0.55rem 1rem;
     border: none;
@@ -101,6 +113,11 @@ header h1 {
     background-color: #2563eb;
     color: #ffffff;
     margin-top: 0.75rem;
+}
+
+.highlight {
+    background-color: #d97706;
+    color: #ffffff;
 }
 
 .secondary-inline {
