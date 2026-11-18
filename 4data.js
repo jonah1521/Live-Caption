@@ -22,12 +22,24 @@ document.addEventListener("DOMContentLoaded", function () {
     const notebookTitleInput = document.getElementById("notebook-title");
     const saveNotebookBtn = document.getElementById("save-notebook-btn");
     const downloadCurrentBtn = document.getElementById("download-current-btn");
+    const notebookSearchInput = document.getElementById("notebook-search");
     const notebooksList = document.getElementById("notebooks-list");
+
+    function getCurrentSearchQuery() {
+        return notebookSearchInput ? notebookSearchInput.value : "";
+    }
 
     // Load saved draft and saved notebooks on startup
     notesInput.value = loadDraftFromStorage();
     loadNotebooksFromStorage();
-    renderNotebooksList();
+    renderNotebooksList(getCurrentSearchQuery());
+
+    // Filter saved notebooks live as the user types in the search box
+    if (notebookSearchInput) {
+        notebookSearchInput.addEventListener("input", function () {
+            renderNotebooksList(getCurrentSearchQuery());
+        });
+    }
 
     // Auto-save active notes while typing
     notesInput.addEventListener("input", function () {
@@ -47,7 +59,7 @@ document.addEventListener("DOMContentLoaded", function () {
             if (notebookTitleInput) {
                 notebookTitleInput.value = "";
             }
-            renderNotebooksList();
+            renderNotebooksList(getCurrentSearchQuery());
             updateSaveIndicator("Saved notebook: " + saved.title);
         });
     }
@@ -96,7 +108,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 updateSaveIndicator("Downloaded " + filename);
             } else if (action === "delete") {
                 deleteNotebookEntry(id);
-                renderNotebooksList();
+                renderNotebooksList(getCurrentSearchQuery());
                 updateSaveIndicator("Deleted: " + notebook.title);
             }
         });
