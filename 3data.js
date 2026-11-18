@@ -32,7 +32,7 @@ function updateButtonStates(isListening) {
     document.getElementById("stop-btn").disabled = !isListening;
 }
 
-function renderNotebooksList() {
+function renderNotebooksList(searchQuery) {
     const listEl = document.getElementById("notebooks-list");
     if (!listEl) {
         return;
@@ -43,9 +43,24 @@ function renderNotebooksList() {
         return;
     }
 
+    const query = (searchQuery || "").trim().toLowerCase();
+    const filteredNotebooks = query
+        ? appState.notebooks.filter(function (nb) {
+            return (
+                nb.title.toLowerCase().includes(query) ||
+                nb.content.toLowerCase().includes(query)
+            );
+        })
+        : appState.notebooks;
+
+    if (filteredNotebooks.length === 0) {
+        listEl.innerHTML = '<p class="placeholder">No saved notebooks match "' + query + '".</p>';
+        return;
+    }
+
     listEl.innerHTML = "";
 
-    appState.notebooks.forEach(function (nb) {
+    filteredNotebooks.forEach(function (nb) {
         const item = document.createElement("div");
         item.className = "notebook-item";
 
