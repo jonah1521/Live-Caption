@@ -1,39 +1,40 @@
 # HANDOFF
 
-**Goal:** Live captioning and note-taking web app for deaf and hard-of-hearing students to follow lectures, auto-save drafts, organize named notebooks, and download notes as `.txt` files.
+**Goal:** A free, offline-capable live captioning and note-taking web app for deaf and hard-of-hearing students so they can read real-time lecture captions, capture timestamped notes, highlight key exam points, save searchable notebooks, and generate instant study summaries during class.
 
-**Live link and repo:** https://jonah1521.github.io/Live-Caption/ (`jonah1521/Live-Caption`)
+**Live link and repo:** https://jonah1521.github.io/Live-Caption/ (GitHub repo: `jonah1521/Live-Caption`)
 
 **Files:**
-- `index.html` - main page layout with Live Captions, My Class Notes, notebook title/save/download bar, and Saved Notebooks card
-- `README.md` - project description and feature overview
-- `HANDOFF.md` - current project status and handoff instructions
-- `data.js` - DATA: app state, Web Speech API setup, and localStorage helpers for auto-saved drafts and named notebooks
-- `2data.js` - PROCESSING: transcript formatting, note appending, notebook add/delete/lookup, and `.txt` filename rules
-- `3data.js` - PRESENTATION: caption rendering, status messages, auto-save indicator, and Saved Notebooks list rendering
-- `4data.js` - startup event listeners connecting speech recognition, auto-save, notebook save/open/delete, and `.txt` file download
-- `style.css` - responsive styling for desktop and mobile including the notebook bar and Saved Notebooks list
+- `index.html` - Main page layout with Live Captions, Key Moment button, My Class Notes, Quick Study Summary panel, and Saved Notebooks search
+- `README.md` - Project description and feature overview
+- `HANDOFF.md` - Current project status and handoff instructions
+- `data.js` - DATA: app state, Web Speech API (`SpeechRecognition`) setup, and `localStorage` persistence
+- `2data.js` - PROCESSING: transcript updates, `[HH:MM]` timestamps, `★ KEY POINT` highlights, offline Quick Study Summary generator, and notebook rules
+- `3data.js` - PRESENTATION: caption rendering, status updates, and live-filtered Saved Notebooks list
+- `4data.js` - STARTUP: connects buttons, speech events, auto-restart on silence, summary rendering, and notebook search/actions
+- `style.css` - Responsive desktop and mobile styling
 
-**Working now:** Live captioning, note-taking, automatic draft persistence in `localStorage`, saving/opening/deleting named notebooks, and downloading notes as `.txt` files on GitHub Pages.
+**Working now:** Live speech-to-text captioning with automatic restart during classroom pauses, one-click timestamped caption copying, `★ Key Moment` highlights, auto-saved drafts in `localStorage`, named Saved Notebooks (open, `.txt` download, delete, and live keyword search), and an offline Quick Study Summary generator. Checked live on GitHub Pages (`https://jonah1521.github.io/Live-Caption/`).
 
-**Last session:** Built the Saved Notebooks feature across all 6 core files (`data.js`, `2data.js`, `3data.js`, `4data.js`, `index.html`, `style.css`) using commits:
-- `Add localStorage draft and notebook storage functions to data.js`
-- `Add notebook creation, deletion, and filename rules to 2data.js`
-- `Add saved notebooks list rendering and save status UI to 3data.js`
-- `Wire up auto-save, saved notebooks, and .txt download in 4data.js`
-- `Add notebook title bar, save/download buttons, and Saved Notebooks card to index.html`
-- `Add notebook title bar, save indicator, and Saved Notebooks card styles to style.css`
+**Last session:**
+- Added automatic `[HH:MM]` timestamps to copied captions and `★ Key Moment` button (`Add timestamps to copied captions and Key Moment highlight button`)
+- Added live search bar to filter Saved Notebooks by title or keyword (`Add search bar to filter saved notebooks by title or keyword`)
+- Added 100% offline Quick Study Summary generator (`Add offline Quick Study Summary generator for class notes`)
 
-**Next step:** Commit this updated `HANDOFF.md` to `jonah1521/Live-Caption`, verify all Saved Notebooks features on the live URL, and paste `HANDOFF.md` into a new chat when ready to add the next feature.
+**Next step:** Final polish check (test on phone and laptop before Friday, November 20, and update `README.md` if needed for the final presentation).
 
-**Decisions:** Plain HTML, CSS, and JavaScript only with no external libraries or API keys; kept existing root-level file layout (`index.html`, `style.css`, `data.js`, `2data.js`, `3data.js`, `4data.js`) and used browser `localStorage` so notes persist offline without a backend server.
+**Decisions:**
+- Plain HTML, CSS, and JavaScript only—no frameworks, build steps, or external API keys so the app stays free and safe on GitHub Pages.
+- Keep the existing flat 4-script architecture (`data.js`, `2data.js`, `3data.js`, `4data.js`) loaded in order[cite: 8].
+- Summary generator runs 100% client-side in plain JavaScript using keyword frequency and starred `★ KEY POINT` extraction[cite: 8].
 
 **APIs and data:**
-- Browser built-in Web Speech API (`window.SpeechRecognition` / `window.webkitSpeechRecognition`) configured for `en-US` with `continuous = true` and `interimResults = true`
-- Browser `localStorage` keys: `liveCaption_activeDraft` (string) and `liveCaption_savedNotebooks` (JSON array of `{ id, title, content, updatedAt }`)
+- Browser Web Speech API (`window.SpeechRecognition` / `window.webkitSpeechRecognition`) for real-time microphone transcription (no external network API or key required).
+- Browser `localStorage` for auto-saved note drafts and saved class notebooks.
 
 **How to check it:**
-1. Open `https://jonah1521.github.io/Live-Caption/` in Chrome or Edge and hard-refresh (`Ctrl+Shift+R` on Windows / `Cmd+Shift+R` on Mac).
-2. Type a title (e.g., `Biology 101`) and some notes, then click **Save Notebook** — verify it appears in the **Saved Notebooks** section below with **Open**, **Download .txt**, and **Delete** buttons.
-3. Refresh the browser tab — verify both your active note draft and your Saved Notebooks list remain saved.
-4. Click **Download .txt** — verify a `.txt` file downloads to your device.
+1. Open `https://jonah1521.github.io/Live-Caption/` in Chrome or Edge.
+2. Click **Start Captions**, speak into the microphone, pause 15+ seconds, and speak again to verify continuous auto-restart.
+3. Click **Copy Captions to Notes** and **★ Key Moment** to verify timestamped notes and highlights appear in **My Class Notes**.
+4. Click **Summarize Notes** to verify the **Quick Study Summary** panel displays top keywords, starred key moments, and main takeaways.
+5. Enter a class title, click **Save Notebook**, and type in the **Search saved notebooks...** bar to verify instant filtering and `.txt` download.
