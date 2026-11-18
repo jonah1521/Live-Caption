@@ -1,4 +1,4 @@
-// STARTUP LAYER: Connects buttons, speech events, and localStorage notebook actions when the page loads
+// STARTUP LAYER: Connects buttons, speech events, summaries, and localStorage notebook actions when the page loads
 
 function downloadTextFile(filename, content) {
     const blob = new Blob([content], { type: "text/plain;charset=utf-8" });
@@ -12,11 +12,66 @@ function downloadTextFile(filename, content) {
     URL.revokeObjectURL(url);
 }
 
+function renderSummaryPanel(summaryPanel, summaryContent, summary) {
+    summaryContent.innerHTML = "";
+
+    const statsEl = document.createElement("p");
+    statsEl.textContent = "Total key words analyzed: " + summary.wordCount;
+    summaryContent.appendChild(statsEl);
+
+    if (summary.keywords.length > 0) {
+        const kwTitle = document.createElement("p");
+        kwTitle.className = "summary-section-title";
+        kwTitle.textContent = "Top Topics & Keywords:";
+        summaryContent.appendChild(kwTitle);
+
+        const kwText = document.createElement("p");
+        kwText.textContent = summary.keywords.join(", ");
+        summaryContent.appendChild(kwText);
+    }
+
+    if (summary.keyMoments.length > 0) {
+        const kmTitle = document.createElement("p");
+        kmTitle.className = "summary-section-title";
+        kmTitle.textContent = "Starred Key Moments (" + summary.keyMoments.length + "):";
+        summaryContent.appendChild(kmTitle);
+
+        const kmList = document.createElement("ul");
+        summary.keyMoments.forEach(function (moment) {
+            const li = document.createElement("li");
+            li.textContent = moment;
+            kmList.appendChild(li);
+        });
+        summaryContent.appendChild(kmList);
+    }
+
+    if (summary.takeaways.length > 0) {
+        const tkTitle = document.createElement("p");
+        tkTitle.className = "summary-section-title";
+        tkTitle.textContent = "Main Takeaways:";
+        summaryContent.appendChild(tkTitle);
+
+        const tkList = document.createElement("ul");
+        summary.takeaways.forEach(function (point) {
+            const li = document.createElement("li");
+            li.textContent = point;
+            tkList.appendChild(li);
+        });
+        summaryContent.appendChild(tkList);
+    }
+
+    summaryPanel.hidden = false;
+}
+
 document.addEventListener("DOMContentLoaded", function () {
     const startBtn = document.getElementById("start-btn");
     const stopBtn = document.getElementById("stop-btn");
     const copyBtn = document.getElementById("copy-caption-btn");
     const highlightBtn = document.getElementById("highlight-btn");
+    const summarizeBtn = document.getElementById("summarize-btn");
+    const closeSummaryBtn = document.getElementById("close-summary-btn");
+    const summaryPanel = document.getElementById("summary-panel");
+    const summaryContent = document.getElementById("summary-content");
     const clearNotesBtn = document.getElementById("clear-notes-btn");
     const notesInput = document.getElementById("notes-input");
     const notebookTitleInput = document.getElementById("notebook-title");
@@ -38,6 +93,25 @@ document.addEventListener("DOMContentLoaded", function () {
     if (notebookSearchInput) {
         notebookSearchInput.addEventListener("input", function () {
             renderNotebooksList(getCurrentSearchQuery());
+        });
+    }
+
+    // Generate offline study summary from current notes
+    if (summarizeBtn && summaryPanel && summaryContent) {
+        summarizeBtn.addEventListener("click", function () {
+            const summary = generateStudySummary(notesInput.value);
+            if (!summary) {
+                updateSaveIndicator("Type or copy some notes first before summarizing.");
+                return;
+            }
+            renderSummaryPanel(summaryPanel, summaryContent, summary);
+            updateSaveIndicator("Study summary ready");
+        });
+    }
+
+    if (closeSummaryBtn && summaryPanel) {
+        closeSummaryBtn.addEventListener("click", function () {
+            summaryPanel.hidden = true;
         });
     }
 
@@ -99,6 +173,9 @@ document.addEventListener("DOMContentLoaded", function () {
                 notesInput.value = notebook.content;
                 if (notebookTitleInput) {
                     notebookTitleInput.value = notebook.title;
+                }
+                if (summaryPanel) {
+                    summaryPanel.hidden = true;
                 }
                 saveDraftToStorage(notesInput.value);
                 updateSaveIndicator("Opened: " + notebook.title);
@@ -194,6 +271,9 @@ document.addEventListener("DOMContentLoaded", function () {
 
     clearNotesBtn.addEventListener("click", function () {
         notesInput.value = "";
+        if (summaryPanel) {
+            summaryPanel.hidden = true;
+        }
         saveDraftToStorage("");
         updateSaveIndicator("Draft cleared");
     });
