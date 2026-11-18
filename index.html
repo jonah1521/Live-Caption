@@ -1,75 +1,236 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Live Caption & Note Taker</title>
-    <link rel="stylesheet" href="style.css">
-</head>
-<body>
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
 
-<header>
-    <h1>Live Caption & Note Taker</h1>
-    <p class="subtitle">Real-time captions and personal note-taking for class</p>
-</header>
+body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background-color: #f4f7f6;
+    color: #222;
+    line-height: 1.6;
+}
 
-<main class="container">
-    <!-- Live Caption Section (Left/Top) -->
-    <section class="card caption-section">
-        <div class="card-header">
-            <h2>Live Captions</h2>
-            <div class="controls">
-                <button id="start-btn" class="btn primary">Start Captions</button>
-                <button id="stop-btn" class="btn danger" disabled>Stop</button>
-            </div>
-        </div>
-        
-        <div id="status" class="status-indicator">Status: Ready</div>
-        
-        <div id="caption-box" class="caption-display" aria-live="polite">
-            <p class="placeholder">Click "Start Captions" and speak into your microphone...</p>
-        </div>
-        
-        <div class="caption-actions">
-            <button id="copy-caption-btn" class="btn secondary">Copy Captions to Notes</button>
-            <button id="highlight-btn" class="btn highlight">★ Key Moment</button>
-        </div>
-    </section>
+header {
+    background-color: #1d4ed8;
+    color: #ffffff;
+    text-align: center;
+    padding: 1.5rem 1rem;
+}
 
-    <!-- Notes Section (Right/Bottom) -->
-    <section class="card notes-section">
-        <div class="card-header">
-            <h2>My Class Notes</h2>
-            <button id="clear-notes-btn" class="btn danger-outline">Clear Notes</button>
-        </div>
+header h1 {
+    font-size: 1.75rem;
+    margin-bottom: 0.25rem;
+}
 
-        <div class="notebook-bar">
-            <input type="text" id="notebook-title" class="title-input" placeholder="Class or topic title (e.g., Biology 101)">
-            <button id="save-notebook-btn" class="btn primary">Save Notebook</button>
-            <button id="download-current-btn" class="btn secondary-inline">Download .txt</button>
-        </div>
+.subtitle {
+    font-size: 0.95rem;
+    opacity: 0.9;
+}
 
-        <div id="save-status" class="save-indicator">Auto-saved</div>
-        
-        <textarea id="notes-input" placeholder="Type your notes here or copy live captions over..."></textarea>
-    </section>
+.container {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+    max-width: 1200px;
+    margin: 1.5rem auto;
+    padding: 0 1rem;
+}
 
-    <!-- Saved Notebooks Section (Full Width Below) -->
-    <section class="card saved-notebooks-section">
-        <div class="card-header">
-            <h2>Saved Notebooks</h2>
-        </div>
-        <div id="notebooks-list" class="notebooks-list">
-            <p class="placeholder">No saved notebooks yet. Save your current notes above to keep them here.</p>
-        </div>
-    </section>
-</main>
+.card {
+    background: #ffffff;
+    border-radius: 10px;
+    padding: 1.25rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    display: flex;
+    flex-direction: column;
+}
 
-<!-- Load scripts in order -->
-<script src="data.js"></script>
-<script src="2data.js"></script>
-<script src="3data.js"></script>
-<script src="4data.js"></script>
+.saved-notebooks-section {
+    grid-column: 1 / -1;
+}
 
-</body>
-</html>
+.card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.75rem;
+    gap: 0.5rem;
+}
+
+.card-header h2 {
+    font-size: 1.25rem;
+    color: #1e293b;
+}
+
+.controls {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.caption-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-top: 0.75rem;
+}
+
+.caption-actions .secondary {
+    flex: 1;
+    margin-top: 0;
+}
+
+.btn {
+    padding: 0.55rem 1rem;
+    border: none;
+    border-radius: 6px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.btn.small {
+    padding: 0.4rem 0.75rem;
+    font-size: 0.85rem;
+}
+
+.btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.primary {
+    background-color: #16a34a;
+    color: #ffffff;
+}
+
+.danger {
+    background-color: #dc2626;
+    color: #ffffff;
+}
+
+.secondary {
+    background-color: #2563eb;
+    color: #ffffff;
+    margin-top: 0.75rem;
+}
+
+.highlight {
+    background-color: #d97706;
+    color: #ffffff;
+}
+
+.secondary-inline {
+    background-color: #2563eb;
+    color: #ffffff;
+}
+
+.danger-outline {
+    background-color: transparent;
+    color: #dc2626;
+    border: 1px solid #dc2626;
+}
+
+.status-indicator {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #475569;
+    margin-bottom: 0.75rem;
+}
+
+.save-indicator {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #16a34a;
+    margin-bottom: 0.5rem;
+}
+
+.notebook-bar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.title-input {
+    flex: 1;
+    min-width: 180px;
+    padding: 0.5rem 0.75rem;
+    font-size: 0.95rem;
+    border: 1px solid #cbd5e1;
+    border-radius: 6px;
+}
+
+.caption-display {
+    flex: 1;
+    min-height: 280px;
+    max-height: 400px;
+    overflow-y: auto;
+    background-color: #f8fafc;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    padding: 1rem;
+    font-size: 1.15rem;
+}
+
+.placeholder {
+    color: #64748b;
+    font-style: italic;
+}
+
+.interim-text {
+    color: #64748b;
+}
+
+textarea#notes-input {
+    flex: 1;
+    min-height: 290px;
+    width: 100%;
+    padding: 1rem;
+    font-size: 1.05rem;
+    font-family: inherit;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    resize: vertical;
+}
+
+.notebooks-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.notebook-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    padding: 0.85rem 1rem;
+    background-color: #f8fafc;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+}
+
+.notebook-info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+}
+
+.notebook-date {
+    font-size: 0.82rem;
+    color: #64748b;
+}
+
+.notebook-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+@media (max-width: 768px) {
+    .container {
+        grid-template-columns: 1fr;
+    }
+}
