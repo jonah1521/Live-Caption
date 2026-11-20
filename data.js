@@ -1,4 +1,4 @@
-// DATA LAYER: Holds app state, SpeechRecognition setup, localStorage storage, and keyless Wiktionary API fetch
+// DATA LAYER: Holds app state, SpeechRecognition setup, localStorage storage, and keyless Wiktionary & LanguageTool API calls
 
 const STORAGE_KEYS = {
     DRAFT: "liveCaption_activeDraft",
@@ -55,6 +55,26 @@ async function fetchWordDefinition(word) {
     const response = await fetch(url, { cache: "no-store" });
     if (!response.ok) {
         throw new Error("Word not found");
+    }
+    return response.json();
+}
+
+async function fetchGrammarCheck(text) {
+    const params = new URLSearchParams();
+    params.append("text", text);
+    params.append("language", "en-US");
+
+    const response = await fetch("https://api.languagetoolplus.com/v2/check", {
+        method: "POST",
+        cache: "no-store",
+        headers: {
+            "Content-Type": "application/x-www-form-urlencoded"
+        },
+        body: params.toString()
+    });
+
+    if (!response.ok) {
+        throw new Error("Grammar check unavailable");
     }
     return response.json();
 }
