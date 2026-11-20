@@ -1,4 +1,4 @@
-// DATA LAYER: Holds app state, SpeechRecognition setup, and localStorage notebook storage
+// DATA LAYER: Holds app state, SpeechRecognition setup, localStorage storage, and keyless Wiktionary API fetch
 
 const STORAGE_KEYS = {
     DRAFT: "liveCaption_activeDraft",
@@ -47,4 +47,14 @@ function loadNotebooksFromStorage() {
 
 function saveNotebooksToStorage() {
     localStorage.setItem(STORAGE_KEYS.NOTEBOOKS, JSON.stringify(appState.notebooks));
+}
+
+async function fetchWordDefinition(word) {
+    const cleanWord = word.trim().toLowerCase();
+    const url = "https://en.wiktionary.org/api/rest_v1/page/definition/" + encodeURIComponent(cleanWord);
+    const response = await fetch(url, { cache: "no-store" });
+    if (!response.ok) {
+        throw new Error("Word not found");
+    }
+    return response.json();
 }
