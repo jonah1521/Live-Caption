@@ -1,4 +1,4 @@
-// STARTUP LAYER: Connects buttons, speech events, summaries, dictionary lookup, and localStorage notebook actions when the page loads
+// STARTUP LAYER: Connects buttons, speech events, summaries, dictionary lookup, grammar quick-fix, and localStorage notebook actions when the page loads
 
 function downloadTextFile(filename, content) {
     const blob = new Blob([content], { type: "text/plain;charset=utf-8" });
@@ -76,6 +76,70 @@ function renderDictionaryResult(container, word, data) {
     }
 }
 
+function renderGrammarMatches(grammarPanel, grammarContent, notesInput, matches, onAppliedFix) {
+    grammarContent.innerHTML = "";
+
+    if (!Array.isArray(matches) || matches.length === 0) {
+        const cleanMsg = document.createElement("p");
+        cleanMsg.textContent = "No grammar or spelling issues found! Your notes look great.";
+        grammarContent.appendChild(cleanMsg);
+        grammarPanel.hidden = false;
+        return;
+    }
+
+    matches.slice(0, 8).forEach(function (match) {
+        const item = document.createElement("div");
+        item.className = "grammar-item";
+
+        const msgEl = document.createElement("p");
+        msgEl.className = "grammar-message";
+        msgEl.textContent = match.message || "Possible issue";
+        item.appendChild(msgEl);
+
+        const originalSlice = notesInput.value.slice(match.offset, match.offset + match.length);
+        if (originalSlice) {
+            const snipEl = document.createElement("p");
+            snipEl.className = "grammar-snippet";
+            snipEl.textContent = "Found: \"" + originalSlice + "\"";
+            item.appendChild(snipEl);
+        }
+
+        if (Array.isArray(match.replacements) && match.replacements.length > 0) {
+            const fixesRow = document.createElement("div");
+            fixesRow.className = "grammar-fixes";
+
+            match.replacements.slice(0, 3).forEach(function (rep) {
+                if (!rep.value) {
+                    return;
+                }
+                const fixBtn = document.createElement("button");
+                fixBtn.type = "button";
+                fixBtn.className = "fix-chip";
+                fixBtn.textContent = "Fix -> " + rep.value;
+                fixBtn.addEventListener("click", function () {
+                    const currentText = notesInput.value;
+                    const expectedWord = currentText.slice(match.offset, match.offset + match.length);
+                    if (expectedWord === originalSlice) {
+                        notesInput.value = currentText.slice(0, match.offset) + rep.value + currentText.slice(match.offset + match.length);
+                    } else if (originalSlice && currentText.indexOf(originalSlice) !== -1) {
+                        notesInput.value = currentText.replace(originalSlice, rep.value);
+                    }
+                    saveDraftToStorage(notesInput.value);
+                    updateSaveIndicator("Applied fix: " + rep.value);
+                    onAppliedFix();
+                });
+                fixesRow.appendChild(fixBtn);
+            });
+
+            item.appendChild(fixesRow);
+        }
+
+        grammarContent.appendChild(item);
+    });
+
+    grammarPanel.hidden = false;
+}
+
 function renderSummaryPanel(summaryPanel, summaryContent, summary) {
     summaryContent.innerHTML = "";
 
@@ -132,6 +196,10 @@ document.addEventListener("DOMContentLoaded", function () {
     const stopBtn = document.getElementById("stop-btn");
     const copyBtn = document.getElementById("copy-caption-btn");
     const highlightBtn = document.getElementById("highlight-btn");
+    const grammarBtn = document.getElementById("grammar-btn");
+    const closeGrammarBtn = document.getElementById("close-grammar-btn");
+    const grammarPanel = document.getElementById("grammar-panel");
+    const grammarContent = document.getElementById("grammar-content");
     const summarizeBtn = document.getElementById("summarize-btn");
     const closeSummaryBtn = document.getElementById("close-summary-btn");
     const summaryPanel = document.getElementById("summary-panel");
@@ -155,6 +223,37 @@ document.addEventListener("DOMContentLoaded", function () {
     notesInput.value = loadDraftFromStorage();
     loadNotebooksFromStorage();
     renderNotebooksList(getCurrentSearchQuery());
+
+    // Grammar & Spelling Quick-Fix check
+    async function runGrammarCheck() {
+        if (!grammarPanel || !grammarContent) {
+            return;
+        }
+        const text = notesInput.value.trim();
+        if (!text) {
+            updateSaveIndicator("Type or copy some notes first before checking grammar.");
+            return;
+        }
+        grammarContent.innerHTML = "<p class=\"placeholder\">Checking grammar and spelling...</p>";
+        grammarPanel.hidden = false;
+        try {
+            const result = await fetchGrammarCheck(notesInput.value);
+            renderGrammarMatches(grammarPanel, grammarContent, notesInput, result.matches, runGrammarCheck);
+            updateSaveIndicator("Grammar check complete");
+        } catch (error) {
+            grammarContent.innerHTML = "<p class=\"placeholder\">Could not reach the grammar service right now. Try again in a moment.</p>";
+        }
+    }
+
+    if (grammarBtn) {
+        grammarBtn.addEventListener("click", runGrammarCheck);
+    }
+
+    if (closeGrammarBtn && grammarPanel) {
+        closeGrammarBtn.addEventListener("click", function () {
+            grammarPanel.hidden = true;
+        });
+    }
 
     // Dictionary lookup handler
     async function handleDictionaryLookup() {
@@ -276,6 +375,9 @@ document.addEventListener("DOMContentLoaded", function () {
                 if (summaryPanel) {
                     summaryPanel.hidden = true;
                 }
+                if (grammarPanel) {
+                    grammarPanel.hidden = true;
+                }
                 saveDraftToStorage(notesInput.value);
                 updateSaveIndicator("Opened: " + notebook.title);
             } else if (action === "download") {
@@ -372,6 +474,9 @@ document.addEventListener("DOMContentLoaded", function () {
         notesInput.value = "";
         if (summaryPanel) {
             summaryPanel.hidden = true;
+        }
+        if (grammarPanel) {
+            grammarPanel.hidden = true;
         }
         saveDraftToStorage("");
         updateSaveIndicator("Draft cleared");
