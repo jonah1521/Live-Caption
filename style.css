@@ -196,7 +196,7 @@ header h1 {
 
 textarea#notes-input {
     flex: 1;
-    min-height: 290px;
+    min-height: 240px;
     width: 100%;
     padding: 1rem;
     font-size: 1.05rem;
@@ -241,6 +241,51 @@ textarea#notes-input {
     font-weight: 700;
     margin-top: 0.4rem;
     color: #1d4ed8;
+}
+
+.dictionary-panel {
+    margin-top: 0.85rem;
+    padding: 0.9rem 1rem;
+    background-color: #f8fafc;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+}
+
+.dictionary-header {
+    margin-bottom: 0.5rem;
+}
+
+.dictionary-header h3 {
+    font-size: 1.05rem;
+    color: #1e293b;
+}
+
+.dictionary-bar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-bottom: 0.6rem;
+}
+
+.dictionary-result {
+    font-size: 0.95rem;
+    color: #1e293b;
+}
+
+.dictionary-entry {
+    margin-top: 0.35rem;
+}
+
+.dictionary-pos {
+    font-weight: 700;
+    color: #1d4ed8;
+}
+
+.dictionary-example {
+    font-size: 0.88rem;
+    color: #475569;
+    font-style: italic;
+    margin-top: 0.15rem;
 }
 
 .notebooks-list {
