@@ -41,6 +41,7 @@
         <div class="card-header">
             <h2>My Class Notes</h2>
             <div class="controls">
+                <button id="grammar-btn" class="btn secondary-inline">Check Grammar</button>
                 <button id="summarize-btn" class="btn secondary-inline">Summarize Notes</button>
                 <button id="clear-notes-btn" class="btn danger-outline">Clear Notes</button>
             </div>
@@ -55,6 +56,15 @@
         <div id="save-status" class="save-indicator">Auto-saved</div>
         
         <textarea id="notes-input" placeholder="Type your notes here or copy live captions over..."></textarea>
+
+        <!-- Grammar & Spelling Quick-Fix Panel -->
+        <div id="grammar-panel" class="grammar-panel" hidden>
+            <div class="grammar-header">
+                <h3>Grammar & Spelling Quick-Fix</h3>
+                <button id="close-grammar-btn" class="btn small danger-outline">Hide</button>
+            </div>
+            <div id="grammar-content" class="grammar-content"></div>
+        </div>
 
         <div id="summary-panel" class="summary-panel" hidden>
             <div class="summary-header">
