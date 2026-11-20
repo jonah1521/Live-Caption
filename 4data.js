@@ -1,4 +1,4 @@
-// STARTUP LAYER: Connects buttons, speech events, summaries, and localStorage notebook actions when the page loads
+// STARTUP LAYER: Connects buttons, speech events, summaries, dictionary lookup, and localStorage notebook actions when the page loads
 
 function downloadTextFile(filename, content) {
     const blob = new Blob([content], { type: "text/plain;charset=utf-8" });
@@ -10,6 +10,70 @@ function downloadTextFile(filename, content) {
     link.click();
     document.body.removeChild(link);
     URL.revokeObjectURL(url);
+}
+
+function stripHtmlTags(rawHtml) {
+    const temp = document.createElement("div");
+    temp.innerHTML = rawHtml || "";
+    return (temp.textContent || temp.innerText || "").trim();
+}
+
+function renderDictionaryResult(container, word, data) {
+    container.innerHTML = "";
+    const englishEntries = data && Array.isArray(data.en) ? data.en : [];
+
+    if (englishEntries.length === 0) {
+        const msg = document.createElement("p");
+        msg.className = "placeholder";
+        msg.textContent = "No English definition found for \"" + word + "\".";
+        container.appendChild(msg);
+        return;
+    }
+
+    let shownCount = 0;
+    englishEntries.forEach(function (entry) {
+        if (shownCount >= 2 || !Array.isArray(entry.definitions)) {
+            return;
+        }
+        const validDef = entry.definitions.find(function (item) {
+            return stripHtmlTags(item.definition).length > 0;
+        });
+        if (!validDef) {
+            return;
+        }
+
+        const block = document.createElement("div");
+        block.className = "dictionary-entry";
+
+        const posEl = document.createElement("span");
+        posEl.className = "dictionary-pos";
+        posEl.textContent = (entry.partOfSpeech || "Word") + ": ";
+        block.appendChild(posEl);
+
+        const defEl = document.createElement("span");
+        defEl.textContent = stripHtmlTags(validDef.definition);
+        block.appendChild(defEl);
+
+        if (Array.isArray(validDef.examples) && validDef.examples.length > 0) {
+            const exText = stripHtmlTags(validDef.examples[0]);
+            if (exText) {
+                const exEl = document.createElement("p");
+                exEl.className = "dictionary-example";
+                exEl.textContent = "Example: \"" + exText + "\"";
+                block.appendChild(exEl);
+            }
+        }
+
+        container.appendChild(block);
+        shownCount += 1;
+    });
+
+    if (shownCount === 0) {
+        const fallback = document.createElement("p");
+        fallback.className = "placeholder";
+        fallback.textContent = "No readable definition available for \"" + word + "\".";
+        container.appendChild(fallback);
+    }
 }
 
 function renderSummaryPanel(summaryPanel, summaryContent, summary) {
@@ -79,6 +143,9 @@ document.addEventListener("DOMContentLoaded", function () {
     const downloadCurrentBtn = document.getElementById("download-current-btn");
     const notebookSearchInput = document.getElementById("notebook-search");
     const notebooksList = document.getElementById("notebooks-list");
+    const dictionaryInput = document.getElementById("dictionary-input");
+    const dictionaryBtn = document.getElementById("dictionary-btn");
+    const dictionaryResult = document.getElementById("dictionary-result");
 
     function getCurrentSearchQuery() {
         return notebookSearchInput ? notebookSearchInput.value : "";
@@ -88,6 +155,38 @@ document.addEventListener("DOMContentLoaded", function () {
     notesInput.value = loadDraftFromStorage();
     loadNotebooksFromStorage();
     renderNotebooksList(getCurrentSearchQuery());
+
+    // Dictionary lookup handler
+    async function handleDictionaryLookup() {
+        if (!dictionaryInput || !dictionaryResult) {
+            return;
+        }
+        const word = dictionaryInput.value.trim();
+        if (!word) {
+            dictionaryResult.innerHTML = "<p class=\"placeholder\">Type a word first to look up its definition.</p>";
+            return;
+        }
+        dictionaryResult.innerHTML = "<p class=\"placeholder\">Looking up \"" + word + "\"...</p>";
+        try {
+            const data = await fetchWordDefinition(word);
+            renderDictionaryResult(dictionaryResult, word, data);
+        } catch (error) {
+            dictionaryResult.innerHTML = "<p class=\"placeholder\">Could not find a definition for \"" + word + "\". Check spelling and try again.</p>";
+        }
+    }
+
+    if (dictionaryBtn) {
+        dictionaryBtn.addEventListener("click", handleDictionaryLookup);
+    }
+
+    if (dictionaryInput) {
+        dictionaryInput.addEventListener("keydown", function (event) {
+            if (event.key === "Enter") {
+                event.preventDefault();
+                handleDictionaryLookup();
+            }
+        });
+    }
 
     // Filter saved notebooks live as the user types in the search box
     if (notebookSearchInput) {
