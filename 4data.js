@@ -1,4 +1,4 @@
-// STARTUP LAYER: Connects buttons, speech events, summaries, dictionary lookup, grammar quick-fix, and localStorage notebook actions when the page loads
+// STARTUP LAYER: Connects buttons, speech events, live caption auto-clean, summaries, dictionary lookup, grammar quick-fix, and localStorage notebook actions when the page loads
 
 function downloadTextFile(filename, content) {
     const blob = new Blob([content], { type: "text/plain;charset=utf-8" });
@@ -191,7 +191,31 @@ function renderSummaryPanel(summaryPanel, summaryContent, summary) {
     summaryPanel.hidden = false;
 }
 
+async function polishFinalizedCaptionSentence(sentence) {
+    if (!appState.autoCorrectCaptions || !sentence || sentence.split(" ").length < 3) {
+        return;
+    }
+
+    // Respect LanguageTool free rate limit (max 20 requests/min -> 1 call every 3.5s)
+    const now = Date.now();
+    if (now - appState.lastCaptionApiCheckAt < 3500) {
+        return;
+    }
+    appState.lastCaptionApiCheckAt = now;
+
+    try {
+        const result = await fetchGrammarCheck(sentence);
+        const polished = applyLanguageToolTopFixes(sentence, result.matches);
+        if (replaceCaptionSentence(sentence, polished)) {
+            renderCaptions();
+        }
+    } catch (error) {
+        // Keep the instant local cleanup silently if offline or rate-limited
+    }
+}
+
 document.addEventListener("DOMContentLoaded", function () {
+    const autoCorrectToggleBtn = document.getElementById("autocorrect-toggle-btn");
     const startBtn = document.getElementById("start-btn");
     const stopBtn = document.getElementById("stop-btn");
     const copyBtn = document.getElementById("copy-caption-btn");
@@ -223,6 +247,16 @@ document.addEventListener("DOMContentLoaded", function () {
     notesInput.value = loadDraftFromStorage();
     loadNotebooksFromStorage();
     renderNotebooksList(getCurrentSearchQuery());
+
+    // Toggle Auto-Clean Captions On/Off
+    if (autoCorrectToggleBtn) {
+        autoCorrectToggleBtn.addEventListener("click", function () {
+            appState.autoCorrectCaptions = !appState.autoCorrectCaptions;
+            autoCorrectToggleBtn.textContent = appState.autoCorrectCaptions ? "Auto-Clean: ON" : "Auto-Clean: OFF";
+            autoCorrectToggleBtn.setAttribute("aria-pressed", appState.autoCorrectCaptions ? "true" : "false");
+            autoCorrectToggleBtn.className = appState.autoCorrectCaptions ? "btn secondary-inline" : "btn danger-outline";
+        });
+    }
 
     // Grammar & Spelling Quick-Fix check
     async function runGrammarCheck() {
@@ -408,8 +442,11 @@ document.addEventListener("DOMContentLoaded", function () {
     };
 
     appState.recognition.onresult = function (event) {
-        processSpeechResults(event);
+        const newlyFinalizedSentences = processSpeechResults(event);
         renderCaptions();
+        newlyFinalizedSentences.forEach(function (sentence) {
+            polishFinalizedCaptionSentence(sentence);
+        });
     };
 
     appState.recognition.onerror = function (event) {
