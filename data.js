@@ -8,6 +8,8 @@ const STORAGE_KEYS = {
 const appState = {
     isListening: false,
     shouldKeepListening: false,
+    autoCorrectCaptions: true,
+    lastCaptionApiCheckAt: 0,
     finalTranscript: "",
     interimTranscript: "",
     recognition: null,
